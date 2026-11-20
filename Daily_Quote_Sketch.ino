@@ -1,8 +1,14 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <optional>
+#include "DEV_Config.h"
+#include "EPD.h"
+#include "GUI_Paint.h"
 #include "Quote.h"
 #include "secrets.h"
+#include <time.h>
+
+struct Quote displayed_quote;
+struct tm now;
 
 void setup() {
   // put your setup code here, to run once:
@@ -10,13 +16,22 @@ void setup() {
   delay(1000);
   Serial.println("Hello World");
 
+  init_display();
+
   //Connect to our network
   const String ssid = WIFI_SSID;
   const String pass = WIFI_PASS;
   connect_to_wifi(ssid, pass);
 
-  //Make a simple network request
-  make_network_request();
+  //Setup time/time zone
+  setup_time_zone();
+
+  //Fetch quote initially
+  if(fetch_quote_with_retry(displayed_quote, 3)){
+    display_quote(displayed_quote);
+  }else{
+    //if fails leave yesterdays quote on the screen etc.
+  }
 }
 
 void loop() {
@@ -37,12 +52,10 @@ void connect_to_wifi(const String &ssid, const String &password){
   }
 }
 
-void make_network_request(){
-  struct Quote quote;
-  if(fetch_quote_of_the_day(quote)){
-     print_quote(quote);
-  }else{
-    Serial.println("Quote could not be fetched.");
+void setup_time_zone(){
+  //Set to Eastern time
+  configTzTime("EST5EDT,M3.2.0,M11.1.0", "pool.ntp.org", "time.nist.gov"); //esp32 core function
+  if(getLocalTime(&now, 10000)){ //wait 10 seconds
+    Serial.println(&now, "Time: %A %Y-%m-%d %H:%M:%S");
   }
 }
-

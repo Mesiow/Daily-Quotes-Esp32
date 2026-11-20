@@ -15,6 +15,7 @@ bool fetch_quote_of_the_day(Quote &quote){
   if(WiFi.status() == WL_CONNECTED){
     HTTPClient http;
 
+    http.useBuiltinCACertBundle();
     //Specify endpoint url
     http.begin(zenQuoteTodayUrlEndpoint);
 
@@ -35,6 +36,15 @@ bool fetch_quote_of_the_day(Quote &quote){
   }else{
     Serial.println("Device not connected to a wifi network, could not fetch quote.");
   }
+  return false;
+}
+
+bool fetch_quote_with_retry(Quote &quote, int attempts){
+  for (int i = 1; i <= attempts; i++) {
+      if (fetch_quote_of_the_day(quote)) return true;
+      Serial.printf("Fetch attempt %d/%d failed\n", i, attempts);
+      if (i < attempts) delay(2000 * i);      // wait 2s, then 4s, ...
+    }
   return false;
 }
 
