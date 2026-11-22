@@ -23,7 +23,6 @@ bool fetch_quote_of_the_day(Quote &quote){
     int responseCode = http.GET();
     if(responseCode == HTTP_CODE_OK){
       String payload = http.getString();
-
       http.end();
       return parse_json_payload(quote, payload);
     }else{
