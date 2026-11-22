@@ -27,7 +27,7 @@ void setup() {
   init_display();
 
   //Connect to our network
-  connect_to_wifi(WIFI_SSID, WIFI_PASS);
+  connect_to_wifi(WIFI_SSID, WIFI_PASS, 200000);
 
   //Setup time/time zone
   setup_time_zone();
@@ -57,16 +57,23 @@ void loop() {
   update_quote();
 }
 
-void connect_to_wifi(const String &ssid, const String &password){
+bool connect_to_wifi(const String &ssid, const String &password, unsigned long timeout_ms){
   WiFi.begin(ssid.c_str(), password.c_str());
+
+  unsigned long start = millis();
   while(WiFi.status() != WL_CONNECTED){
+    if (millis() - start >= timeout_ms) {
+        Serial.println("\nWi-Fi connect timed out, will retry later");
+        return false;
+      }
+
     delay(500);
     Serial.print(".");
   }
 
-  if(WiFi.status() == WL_CONNECTED){
-    Serial.printf("Connected to Wi-Fi network %s\n", ssid.c_str());
-  }
+  
+  Serial.printf("Connected to Wi-Fi network %s\n", ssid.c_str());
+  return true;
 }
 
 void setup_time_zone(){

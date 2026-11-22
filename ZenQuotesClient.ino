@@ -2,7 +2,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 
-const char *zenQuoteTodayUrlEndpoint = "https://zenquotes.io/api/today";
+const char *zenQuoteTodayUrlEndpoint = "https://zenquotes.io/api/random";
 
 void print_quote(const Quote &quote){
   Serial.printf("Author: %s\n", quote.author.c_str());
